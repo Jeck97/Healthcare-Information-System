@@ -1,0 +1,315 @@
+body {
+  margin: 0;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #696969;
+}
+
+nav a {
+  text-decoration: none;
+  padding: 0 1rem;
+  color: white;
+}
+
+nav div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+nav > div > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 5rem;
+  border-radius: 4px;
+}
+
+nav > div > a.selected {
+  color: #696969;
+  background-color: white;
+}
+
+nav > div > a > span {
+  font-weight: bolder;
+  padding: 0.5rem 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1rem;
+}
+
+.header .search-bar {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  border: 2px solid #696969;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+}
+
+.header .search-bar input {
+  flex-grow: 1;
+  border: none;
+  font-size: medium;
+  padding: 0 1rem;
+}
+
+.header .search-bar input:focus {
+  outline: none;
+}
+
+.header .button-refresh,
+.header .button-search {
+  font-weight: bolder;
+  border: none;
+  cursor: pointer;
+  background-color: inherit;
+  color: #696969;
+  margin: 0 0.5rem;
+}
+
+.header .button-add-drug {
+  padding: 0.6rem 1rem;
+  margin: 0 0.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 2px solid #696969;
+  color: #696969;
+  cursor: pointer;
+}
+
+.header .button-add-drug:hover {
+  color: white;
+  background-color: #696969;
+}
+
+.content {
+  display: flex;
+  padding: 1rem 1rem;
+}
+
+.content > table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.content > table > thead > tr > th {
+  background-color: lightgrey;
+  border-top: 2px solid #696969;
+  border-bottom: 2px solid #696969;
+  text-align: start;
+  padding: 0.5rem 1rem;
+}
+
+.content > table > tbody > tr > td {
+  border-bottom: 1px solid #696969;
+  padding: 0.5rem 1rem;
+}
+
+.content > table > tbody > tr > td.no-result {
+  font-size: x-large;
+  text-align: center;
+  padding: 5rem 0;
+  border: none;
+}
+
+.content > table > tbody > tr > td > button {
+  border: none;
+  border-radius: 50%;
+  font-weight: bolder;
+  background-color: inherit;
+  border-radius: 50%;
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.content > table > tbody > tr > td > button:hover {
+  background-color: #ededed;
+}
+
+#btn-top {
+  display: none;
+  position: fixed;
+  bottom: 4rem;
+  right: 4rem;
+  font-size: 1rem;
+  background-color: #696969;
+  color: white;
+  cursor: pointer;
+  padding: 1rem;
+  border-radius: 50%;
+}
+
+#btn-top:hover {
+  background-color: #555;
+}
+
+.modal-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  z-index: 1000;
+  box-sizing: border-box;
+
+  opacity: 0;
+  animation-name: modal-open;
+  animation-duration: 0.2s;
+  animation-fill-mode: forwards;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-dialog-close {
+  animation-name: modal-close;
+}
+
+.modal-dialog .dialog-container {
+  width: 100%;
+  max-width: 600px;
+  background: white;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 5px 5px 10px #696969;
+  margin: 0;
+
+  opacity: 0;
+  transform: scale(0.75);
+  animation-name: modal-dialog-open;
+  animation-duration: 0.2s;
+  animation-fill-mode: forwards;
+}
+
+.modal-dialog .dialog-container .dialog-header {
+  background: #696969;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.modal-dialog .dialog-container .dialog-header .title {
+  font-size: x-large;
+  font-weight: bolder;
+}
+
+.modal-dialog .dialog-container .dialog-header .button-close {
+  background: none;
+  outline: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transform: scale(2.5);
+}
+
+.modal-dialog .dialog-container .dialog-content {
+  padding: 2rem;
+  font-size: larger;
+}
+
+.modal-dialog .dialog-container .dialog-content div {
+  margin-bottom: 1rem;
+}
+
+.modal-dialog .dialog-container .dialog-content div input,
+.modal-dialog .dialog-container .dialog-content div textarea {
+  padding: 0.5rem 1rem;
+  outline: none;
+  border: none;
+  border-bottom: 1px solid #696969;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.modal-dialog .dialog-container .dialog-content .input-text,
+.modal-dialog .dialog-container .dialog-content .input-number {
+  display: flex;
+  align-items: center;
+}
+
+.modal-dialog .dialog-container .dialog-content .input-textarea > textarea {
+  border-radius: 0.5rem;
+  border: 1px solid #696969;
+  resize: none;
+  margin: 0.5rem 0 0 0;
+}
+
+.modal-dialog .dialog-container .dialog-buttons {
+  background: white;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 1rem 1rem 1rem;
+}
+
+.modal-dialog .dialog-container .dialog-buttons button {
+  padding: 0.5rem 0.8rem;
+  border: 2px solid #696969;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: medium;
+  margin-left: 1rem;
+  cursor: pointer;
+  outline: none;
+  width: 6rem;
+}
+
+.modal-dialog .dialog-container .dialog-buttons .button-submit {
+  background: white;
+  color: #696969;
+}
+
+.modal-dialog .dialog-container .dialog-buttons .button-submit:hover {
+  background: #ededed;
+}
+
+.modal-dialog .dialog-container .dialog-buttons .button-cancel {
+  background: #696969;
+  color: white;
+}
+
+.modal-dialog .dialog-container .dialog-buttons .button-cancel:hover {
+  background: #555;
+}
+
+@keyframes modal-open {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-close {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-dialog-open {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--Include jquery now, may be different version with others -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="consultation.js"></script>
+    <link rel="stylesheet" href="consultation.css" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script
+      src="https://kit.fontawesome.com/73d902c54d.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css"
+    />
+    <script
+      type="text/javascript"
+      charset="utf8"
+      src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"
+    ></script>
+  </head>
+
+  <body>
+    <div class="container mt-5">
+      <div class="card rounded shadow">
+        <div class="card-body">
+          <span class="h1">
+            <a href="../navigation.php" class="float-left h1 mx-3"
+              ><i class="fas fa-arrow-left"></i></a
+            >Consultation</span
+          >
+          <hr />
+          <h3>Click here for next patient</h3>
+          <form action="#" id="nextQueueForm" style="display: none">
+            <input type="hidden" name="nextQueue" />
+            <!--  Get doctor id  and departmentID from session -->
+            <input type="hidden" name="doctorID" value="1" id="doctorID" />
+            <input
+              type="hidden"
+              name="departmentID"
+              id="departmentID"
+              value="1"
+            />
+            <input type="hidden" name="consultation" />
+          </form>
+          <button
+            id="next_queue_button"
+            onclick="nextQueue()"
+            class="btn btn-primary px-5"
+          >
+            Next number
+          </button>
+        </div>
+      </div>
+
+      <div id="patient-info" class="card mt-3 rounded shadow">
+        <div class="card-body">
+          <h1>Patient Information</h1>
+          <hr />
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_fname" class="m-1">First name:</label>
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_fname"
+                name="patient_fname"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_lname" class="m-1">Last name:</label>
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_lname"
+                name="patient_lname"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_birthday" class="m-1">Date of Birth:</label>
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="date"
+                id="patient_birthday"
+                name="patient_birthday"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_identification_number" class="m-1"
+                >Identification Number:</label
+              >
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_identification_number"
+                name="patient_identification_number"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_email" class="m-1">Patient Email: </label>
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_email"
+                name="patient_email"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_phone" class="m-1"
+                >Patient Phone Number:</label
+              >
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_phone"
+                name="patient_phone"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_address1" class="m-1"
+                >Patient Address 1</label
+              >
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_address1"
+                name="patient_address1"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_address2" class="m-1"
+                >Patient Address 2:</label
+              >
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_address2"
+                name="patient_address2"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_city" class="m-1">Patient city:</label>
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_city"
+                name="patient_city"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_postcode" class="m-1">Postcode:</label>
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_postcode"
+                name="patient_postcode"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <div class="row m-1 p-1">
+            <div class="col-lg-2">
+              <label for="patient_state" class="m-1">Patient state:</label>
+            </div>
+            <div class="col-lg-10">
+              <input
+                type="text"
+                id="patient_state"
+                name="patient_state"
+                class="patient_data form-control"
+              />
+            </div>
+          </div>
+          <input type="hidden" name="patient_id" id="patient_id" />
+        </div>
+      </div>
+
+      <div id="medical-history" class="card mt-3">
+        <div class="card-body">
+          <h1>Patient Medical History</h1>
+          <hr />
+          <table
+            id="medical_history_table"
+            class="table table-bordered table-striped dt-responsive"
+          >
+            <thead>
+              <th>Medical History Description</th>
+              <th>Medical History Date</th>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="consultation-form" class="card mt-3 rounded shadow">
+        <div class="card-body">
+          <h1>Consultation Form</h1>
+          <hr />
+          <label for="consultation_reason">Medical History</label><br />
+          <textarea
+            name="consultation_reason"
+            class="form-control"
+            style="resize: none; width: 100%"
+            rows="10"
+            id="consultation_reason"
+          ></textarea
+          ><br />
+          <div class="row">
+            <div class="col-lg-2">
+              <label for="consultation_revisit" class="m-2"
+                >Revisit Status</label
+              >
+            </div>
+            <div class="col-lg-10">
+              <select
+                name="consultation_revisit"
+                id="consultation_revisit"
+                class="form-control"
+              >
+                <option value="0">No</option>
+                <option value="1">Yes</option></select
+              ><br />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3 rounded shadow">
+        <div class="card-body">
+          <h1>Order Drug</h1>
+          <hr />
+          <!-- How to order drug better? I mean record the quantity -->
+          <div class="row">
+            <div class="col-lg-2">
+              <label for="consultation_order_drug" class="m-1"
+                >Order Drug</label
+              >
+            </div>
+            <div class="col-lg-4">
+              <select
+                id="consultation_order_drug"
+                name="consultation_order_drug"
+                class="form-control"
+              >
+                <option>None</option>
+              </select>
+            </div>
+            <div class="col-lg-4">
+              <input
+                type="number"
+                class="form-control"
+                name="drug_quantity"
+                id="drug_quantity"
+                readonly
+              />
+            </div>
+            <div class="col-lg-2">
+              <button id="confirmQuantity" class="btn btn-primary">
+                Confirm
+              </button>
+            </div>
+          </div>
+
+          <table
+            id="order_drug_table"
+            class="table table-striped"
+            style="display: none; width: 100%"
+          >
+            <thead>
+              <tr>
+                <th>Drug Name</th>
+                <th>Drug Quantity</th>
+                <th>Edit Quantity</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div
+            class="container"
+            id="take_medicine_quantity_div"
+            style="display: none"
+          >
+            <div class="row">
+              <div class="col-lg-2">
+                <label for="take_medicine_quantity">Order Quantity</label>
+              </div>
+              <div class="col-lg-10">
+                <input
+                  type="number"
+                  name="take_medicine_quantity"
+                  id="take_medicine_quantity"
+                  class="form-control"
+                />
+              </div>
+            </div>
+            <label for="take_medicine_description">Order Description</label>
+            <textarea
+              name="take_medicine_description"
+              id="take_medicine_description"
+              style="width: 100%; resize: none"
+              rows="10"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <input type="hidden" name="queue_id" id="queue_id" />
+      </div>
+
+      <div class="card mt-3 rounded shadow">
+        <div class="card-body">
+          <h1>Order Ward Bed</h1>
+          <hr />
+          <div class="row">
+            <div class="col-lg-2">
+              <label for="consultation_order_wardbed">Order Ward Bed</label>
+            </div>
+            <div class="col-lg-10">
+              <select
+                class="form-control"
+                name="consultation_order_wardbed"
+                id="consultation_order_wardbed"
+              >
+                <option>None</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3 rounded shadow">
+        <div class="card-body">
+          <legend>Choose Services</legend>
+          <button id="choose_service_button" class="btn btn-primary">
+            Click to choose</button
+          ><br /><br />
+          <input
+            class="form-control"
+            type="text"
+            name="service_chosen"
+            id="service_chosen"
+            value="No service chosen"
+            readonly
+          />
+        </div>
+      </div>
+      <br />
+
+      <div id="submitcontainer" class="container">
+        <button id="submit_button" class="btn btn-primary px-5" disabled>
+          Submit
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-modal" id="service_modal">
+      <div class="modal-content container">
+        <div id="modal-container">
+          <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true" id="close_modal_button">&times;</span>
+          </button>
+          <h3 class="card-body">Choose the services</h3>
+          <hr />
+          <div id="checkbox-container">
+            <div id="grid-item-container"></div>
+          </div>
+        </div>
+
+        <div id="confirm-button-container">
+          <button id="confirm-button" class="btn btn-primary">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-modal" id="drug_modal">
+      <div class="modal-content container">
+        <div id="modal-container">
+          <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true" id="close_quantity_button">&times;</span>
+          </button>
+          <h3 id="checkbox-instruction-text">Update the quantity</h3>
+          <hr />
+          <div id="quantity_container">
+            <label>Drug Name: </label>
+            <label id="edit_drug_name_label" class="form-control"></label><br />
+            <label>New Quantity</label>
+            <input
+              type="number"
+              id="edit_drug_quantity"
+              min="1"
+              class="form-control"
+            />
+            <input type="hidden" id="edit_drug_quantity_drug_id" />
+          </div>
+        </div>
+
+        <div id="confirm-button-container">
+          <button id="confirm-quantity-button">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

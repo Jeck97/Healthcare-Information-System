@@ -1,0 +1,293 @@
+*{
+	margin:0;
+	padding:0;
+	box-sizing:border-box;
+}
+
+html,body{
+	height:100%;
+}
+
+.side-navigation{
+	display:flex;
+	flex-flow:column;
+	height:100%;
+	max-width:200px;
+	width:100%;
+	border-right:1px solid #e3e3e3;
+}
+
+.navigation-text{
+	border-bottom:1px solid #e3e3e3;
+	padding:5px;
+	margin-bottom:10px;
+}
+
+.billing-text{
+	padding:10px;
+	background-color:#dedede;
+	cursor:pointer;
+}
+
+.manage-bills-text,
+.payment-history-text{
+	padding:10px;
+	cursor:pointer;
+}
+
+.header{
+	display:flex;
+	padding:10px 20px;
+	width:100%;
+	border-bottom: 1px solid #e3e3e3;
+	height:fit-content;
+	box-shadow:5px 5px 12px #8888;
+	z-index:1000;
+}
+
+.back-icon{
+	cursor:pointer;
+}
+
+.header-title{
+	margin-left:10px;
+	font-weight:bold;
+}
+
+.system-title{
+	text-align:center;
+	margin-top:15px;
+	margin-bottom:70px;
+	font-weight:bold;
+}
+
+.content-container{
+	background-color:#f2f9ff;
+	height:100%;
+}
+
+.bill-content,
+.bill-details-content,
+.manage-bills-content,
+.manage-bill-details-content,
+.payment-history-content{
+	margin:50px 30px;
+	padding:10px 10px 30px;
+	border:1px solid #d2d2d2;
+	background-color:white;
+	box-shadow:5px 5px 12px #8888;
+	min-height:150px;
+	display:flex;
+	flex-flow:column;
+}
+
+.content-title{
+	padding-top:40px;
+	margin-left:20px;
+	padding-bottom:10px;
+	border-bottom:1px solid #f0f0f0;
+	font-weight:bold;
+	font-size:30px;
+}
+
+.search-area{
+	display:flex;
+	justify-content:center;
+	margin-top:25px;
+}
+
+.search-text{
+	font-weight:normal;
+	font-size:16px;
+	margin-right:5px;
+}
+
+.search-icon{
+	margin-left:10px;
+}
+
+.manage-bills-search-button,
+.search-button{
+	cursor:pointer;
+	padding:1px;
+}
+
+.day-dropdown{
+	width:100px;
+}
+
+table{
+	width:100%;
+	margin-top:30px;
+}
+
+table,th,td{
+	border:1px solid black;
+}
+
+th,td{
+	height:30px;
+}
+
+td{
+	text-align:center;
+}
+
+.manage-bills-action-button,
+.action-button{
+	padding:1px;
+	cursor:pointer;
+}
+
+small{
+	font-weight:normal;
+	font-size:20px;
+}
+
+.bill-detail-text,
+.item-detail-text{
+	font-weight:bold;
+	padding-top:30px;
+	margin-bottom:40px;
+}
+
+.bill-details-grid{
+	display:grid;
+	grid-template-columns:1fr 1fr;
+	grid-auto-rows:50px;
+}
+
+.total-item-container,
+.total-price-container{
+	display:flex;
+	margin-top:30px;
+	margin-right:20px;
+	justify-content:flex-end;
+}
+
+.bill-details-container,
+.item-table-container{
+	display:flex;
+	flex-flow:column;
+	margin-left:20px;
+	margin-right:20px;
+}
+
+label{
+	display:inline-block;
+	max-width:100px;
+	width:100%;
+}
+
+input{
+	vertical-align:top;
+	padding-left: 5px;
+}
+
+.total-item-text,
+.grand-total-text{
+	margin-right:10px;
+}
+
+.confirm-button-container{
+	display:flex;
+	justify-content:flex-end;
+	margin-right:20px;
+	margin-top:30px;
+}
+
+.confirm-button,
+.payment-button{
+	padding:10px;
+	background-color:#7affde;
+	color:black;
+	border-radius:5px;
+	border:none;
+	min-width:100px;
+	cursor:pointer;
+	box-shadow:5px 5px 12px #8888
+}
+
+.print-invoice-button{
+	margin-right:20px;
+}
+
+.back-button,
+.manage-back-button{
+	border:none;
+	background-color:white;
+	margin-right:25px;
+	cursor:pointer;
+}
+
+.bg-modal {
+	position: fixed;
+	width: 100%;
+	height: 100vh;
+	top: 0;
+	left: 0;
+	background-color: rgba(0,0,0,0.7);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+	visibility:hidden;
+	opacity:0;
+	transition: visibility 0s, opacity 0.5s;
+}
+
+.bg-active {
+	visibility: visible;
+	opacity: 1;
+}
+
+.modal-content {
+	position: relative;
+	background-color: white;
+	min-width: 420px;
+	padding: 30px 20px;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	flex-direction: column;
+	border-radius: 6px;
+}
+
+.modal-close {
+	position: absolute;
+	top: 0;
+	right: 7px;
+	font-size: 30px;
+	transform: rotate(45deg);
+	cursor: pointer;
+}
+
+.field-container{
+	margin-top:30px;
+	margin-left:10px;
+}
+
+.payment-calculator-text{
+	font-weight:bold;
+	font-size:20px;
+}
+
+#modal-container {
+	width: 100%;
+	height: 100%;
+}
+
+.make-payment-button{
+	padding:10px;
+	background-color:#7affde;
+	color:black;
+	border-radius:5px;
+	border:none;
+	min-width:100px;
+	cursor:pointer;
+	height:30px;
+}
+
+.form-container{
+	display:none;
+}

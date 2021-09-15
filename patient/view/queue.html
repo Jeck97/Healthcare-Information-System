@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <?php include '../../library.php';?>
+    <!-- CSS -->
+    <link rel="stylesheet" href="../style/style.css">
+    <!-- Vuejs script -->
+    <script type="module" defer src="../script/queue.js"></script>
+    <title>Queue</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container card my-auto mt-5 py-3 px-5">
+
+            <form @submit.prevent="onSubmit" class="my-3">
+                <div class="title">
+                    <span>Queue Info</span>
+                </div>
+                <div class="my-4">
+                    <!-- Queue & Department -->
+                    <div class="row my-2">
+                        <div class="col-md-6 my-2">
+                            <label class="form-label">Queue Type</label>
+                            <select class="form-control" v-model="queue.type" :class="{
+                                'is-invalid': $v.type.error,
+                                'is-valid': $v.type.valid,
+                            }" @change='selectQueue'>
+                                <option value="" disabled selected>
+                                    Select your queue type
+                                </option>
+                                <option :value="type.value" v-for="type of init.queue.types" class="text-capitalize"
+                                    :disabled='!type.available'>
+                                    {{capitalize(type.name)}}
+                                </option>
+                            </select>
+                            <div class="valid-feedback">Queue type is valid!</div>
+                            <div class="invalid-feedback">Queue type is required!</div>
+                        </div>
+                        <!-- Department -->
+                        <div class="col-md-6 my-2">
+                            <label class="form-label">Department</label>
+                            <select class="form-control" v-model="queue.departmentId" :class="{
+                                'is-invalid': $v.departmentId.error,
+                                'is-valid': $v.departmentId.valid,
+                            }" :disabled='queue.type !== 0'>
+                                <option value="" disabled selected>
+                                    Select your department
+                                </option>
+                                <option :value="department.id" v-for="department of database.departments"
+                                    class="text-capitalize">
+                                    {{capitalize(department.name)}}
+                                </option>
+                            </select>
+                            <div class="valid-feedback">Department is valid!</div>
+                            <div class="invalid-feedback">Department is required!</div>
+                        </div>
+                    </div>
+                    <!-- Return Visit & Take medicine-->
+                    <div class="row my-2">
+                        <!-- Return Visit -->
+                        <div class="col-md-6 my-2">
+                            <label class="form-label">Return Visit</label>
+                            <select class="form-control" v-model="queue.returnVisit" :class="{
+                                'is-invalid': $v.returnVisit.error,
+                                'is-valid': $v.returnVisit.valid,
+                            }" :disabled="queue.type !== 1 || database.visits.length === 0" @change='selectVisitDepartment'>
+                                <option value="" disabled selected>
+                                    Select your visit
+                                </option>
+                                <option :value="visit.id" v-for="visit of getReturnVisits" class="text-capitalize">
+                                    {{capitalize(visit.name)+' '+ visit.time.split('T')[0]}}
+                                </option>
+                            </select>
+                            <div class="valid-feedback">Return visit is valid!</div>
+                            <div class="invalid-feedback">Return visit is required!</div>
+                        </div>
+                        <!-- Take Medicine -->
+                        <div class="col-md-6 my-2">
+                            <label class="form-label">Take Medicine</label>
+                            <select class="form-control" v-model="queue.takeMedicine" :class="{
+                                'is-invalid': $v.takeMedicine.error,
+                                'is-valid': $v.takeMedicine.valid,
+                            }" :disabled="queue.type !== -1 || database.medicines.length === 0" @change='selectTakeMedicine'>
+                                <option value="" disabled selected>
+                                    Select your prescription medication
+                                </option>
+                                <option :value="medicine.id" v-for="medicine of getMedicines" class="text-capitalize">
+                                    {{capitalize(medicine.name)}}
+                                </option>
+                            </select>
+                            <div class="valid-feedback">Take medicine is valid!</div>
+                            <div class="invalid-feedback">Take medicine is required!</div>
+                        </div>
+
+                    </div>
+
+                    <!-- Consultation Reason -->
+                    <div class="row my-2">
+                        <div class="col-md-12 my-2">
+                            <label class="form-label">Consultation Reason</label>
+                            <textarea class="form-control" v-model="queue.consultationReason" :class="{
+                                            'is-invalid':$v.consultationReason.error,
+                                            'is-valid':$v.consultationReason.valid,
+                                        }" rows=5>
+                            </textarea>
+                            <div class="valid-feedback">Consultation reason is valid!</div>
+                            <div class="invalid-feedback">Consultation is required!</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Submit button -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-block mb-4 text-capitalize">
+                        Register
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,141 @@
+body {
+  margin: 0;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #696969;
+}
+
+nav a {
+  text-decoration: none;
+  padding: 0 1rem;
+  color: white;
+}
+
+nav div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+nav > div > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 5rem;
+  border-radius: 4px;
+}
+
+nav > div > a.selected {
+  color: #696969;
+  background-color: white;
+}
+
+nav > div > a > span {
+  font-weight: bolder;
+  padding: 0.5rem 1rem;
+}
+
+.header {
+  padding: 1rem 1rem;
+}
+
+.header > div {
+  display: flex;
+  align-items: center;
+}
+
+.header label {
+  width: 3.5rem;
+  display: block;
+  font-size: larger;
+  font-weight: bolder;
+}
+
+.header input {
+  font-size: larger;
+  font-weight: bolder;
+  border-radius: 0.5rem;
+  border: 2px solid #696969;
+  outline: none;
+  padding: 0.2rem 1rem;
+  color: #696969;
+  margin-right: 2rem;
+  width: 50%;
+  text-align: center;
+}
+
+.header button {
+  width: 120px;
+  padding: 0.6rem 1rem;
+  margin-left: 0.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 2px solid #696969;
+  color: #696969;
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+.header button:hover {
+  color: white;
+  background-color: #696969;
+}
+
+.content {
+  margin: 1rem;
+}
+
+.content table {
+  width: 100%;
+  font-size: large;
+  border-collapse: collapse;
+}
+
+.content table th {
+  text-align: start;
+  padding: 1rem 0;
+  border-bottom: 2px solid #696969;
+}
+
+.content table td {
+  padding: 0.5rem 0;
+  cursor: default;
+}
+
+.content table td.total {
+  border-top: 1px solid #696969;
+  border-bottom: 1px solid #696969;
+  font-weight: bold;
+  padding: 1.5rem 0.5rem;
+}
+
+.content table td.no-result {
+  font-size: x-large;
+  text-align: center;
+  padding: 5rem 0;
+  border: none;
+}
+
+#btn-top {
+  display: none;
+  position: fixed;
+  bottom: 4rem;
+  right: 4rem;
+  font-size: 1rem;
+  background-color: #696969;
+  color: white;
+  cursor: pointer;
+  padding: 1rem;
+  border-radius: 50%;
+}
+
+#btn-top:hover {
+  background-color: #555;
+}

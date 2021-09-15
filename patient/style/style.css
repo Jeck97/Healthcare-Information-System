@@ -1,0 +1,19 @@
+body {
+    box-sizing: border-box;
+}
+
+.title {
+    font-size: 1.25rem;
+    height: 2rem;
+}
+
+.title span {
+    font-weight: bold;
+    color: rgb(136, 136, 136);
+}
+
+.button {
+    outline: none;
+    border: none;
+    background-color: blanchedalmond;
+}

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <?php include '../../library.php'; ?>
+    <!-- CSS -->
+    <link rel="stylesheet" href="../style/style.css" />
+    <!-- Vuejs script -->
+    <script type="module" defer src="../script/patient.js"></script>
+    <title>Registration</title>
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="container card my-auto mt-5 py-3 px-5">
+        <span class="h1">
+          <a href="../../navigation.php" class="float-left h1 mx-3"
+            ><i class="fas fa-arrow-left"></i></a
+          >Register Patient</span
+        >
+
+        <hr />
+        <!-- Search -->
+        <div class="input-group rounded my-3">
+          <input
+            type="search"
+            class="form-control rounded"
+            placeholder="Enter patient's identification number"
+            aria-label="Search"
+            aria-describedby="search-addon"
+            v-model="search"
+          />
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            @click="onClickSearch"
+          >
+            search
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form @submit.prevent="onSubmit" class="my-3">
+          <div class="title"><span>Basic Info</span></div>
+          <div class="my-4">
+            <!-- First & Last Name -->
+            <div class="row my-2">
+              <!-- First Name -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">First name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="patient.name.first"
+                  placeholder="Enter your first name"
+                  :class="{
+                                'is-invalid': !validations.name.first && dirty.patient.name.first,
+                                'is-valid': validations.name.first && dirty.patient.name.first,
+                              }"
+                />
+                <div class="valid-feedback">First name is valid!</div>
+                <div class="invalid-feedback">First name is required!</div>
+              </div>
+              <!-- Last Name -->
+              <div class="col-md-6 my-2">
+                <label class="form-label"> Last name </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="patient.name.last"
+                  placeholder="Enter your last name"
+                  :class="{
+                                'is-invalid':  !validations.name.last && dirty.patient.name.last,
+                                'is-valid':  validations.name.last && dirty.patient.name.last,
+                              }"
+                />
+                <div class="valid-feedback">Last name is valid!</div>
+                <div class="invalid-feedback">Last name is required!</div>
+              </div>
+            </div>
+            <!-- Birthday & Email-->
+            <div class="row my-2">
+              <!-- Birthday -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Date of Birth</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  v-model="patient.dateOfBirth"
+                  placeholder="Enter your date of birth"
+                  :class="{
+                                'is-invalid': !validations.dateOfBirth && dirty.patient.dateOfBirth,
+                                'is-valid':  validations.dateOfBirth && dirty.patient.dateOfBirth,
+                              }"
+                  :max="new Date().toISOString().split('T')[0]"
+                />
+                <div class="valid-feedback">Date of birth is valid!</div>
+                <div class="invalid-feedback">Date of birth is required!</div>
+              </div>
+              <!-- Email -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  v-model="patient.email"
+                  placeholder="Enter your email"
+                  :class="{
+                                'is-invalid': (!validations.email.required || !validations.email.isEmail || !validations.email.unique) && dirty.patient.email,
+                                'is-valid': validations.email.required && validations.email.isEmail && validations.email.unique && dirty.patient.email
+                              }"
+                  @input="checkUniqueEmail"
+                />
+                <div class="valid-feedback">Email is valid!</div>
+                <div
+                  v-if="!validations.email.required && dirty.patient.email"
+                  class="invalid-feedback"
+                >
+                  Email is required!
+                </div>
+                <div
+                  v-else-if="!validations.email.isEmail && dirty.patient.email"
+                  class="invalid-feedback"
+                >
+                  Email is invalid!
+                </div>
+                <div
+                  v-else-if="!validations.email.unique && dirty.patient.email"
+                  class="invalid-feedback"
+                >
+                  Email is not unique!
+                </div>
+              </div>
+            </div>
+            <!-- Phone Number & Idenfication -->
+            <div class="row my-2">
+              <!-- Phone Number -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Phone Number</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  v-model="patient.phoneNumber"
+                  placeholder="Enter your phone number "
+                  :class="{
+                                'is-invalid': (!validations.phoneNumber.required || !validations.phoneNumber.unique) && dirty.patient.phoneNumber,
+                                'is-valid': validations.phoneNumber.required && validations.phoneNumber.unique && dirty.patient.phoneNumber,
+                              }"
+                  @input="checkUniquePhoneNumber"
+                />
+                <div class="valid-feedback">Phone number is valid!</div>
+                <div
+                  v-if="!validations.phoneNumber.required && dirty.patient.phoneNumber"
+                  class="invalid-feedback"
+                >
+                  Phone number is required!
+                </div>
+                <div
+                  v-else-if="!validations.phoneNumber.unique && dirty.patient.phoneNumber"
+                  class="invalid-feedback"
+                >
+                  Phone number is not unique!
+                </div>
+              </div>
+              <!-- Identification -->
+              <div class="col-md-6 my-2">
+                <label class="form-label"> Identification (IC/ID No) </label>
+                <input
+                  type="text "
+                  class="form-control"
+                  v-model="patient.identificationNumber"
+                  placeholder="Enter your identification number "
+                  :class="{
+                                'is-invalid': (!validations.identificationNumber.required || !validations.identificationNumber.unique) && dirty.patient.identificationNumber,
+                                'is-valid': validations.identificationNumber.required && validations.identificationNumber.unique,
+                              }"
+                  @input="checkUniqueIdentificationNumber"
+                />
+                <div class="valid-feedback">Identication is valid!</div>
+                <div
+                  v-if="!validations.identificationNumber.required && dirty.patient.identificationNumber"
+                  class="invalid-feedback"
+                >
+                  Identication is required!
+                </div>
+                <div
+                  v-else-if="!validations.identificationNumber.unique"
+                  class="invalid-feedback"
+                >
+                  Phone number is not unique!
+                </div>
+              </div>
+            </div>
+            <!-- Gender -->
+            <div class="row my-2">
+              <div class="col-md-6 my-2">
+                <label class="form-label">Gender</label>
+                <select
+                  class="form-control"
+                  v-model="patient.gender"
+                  :class="{
+                                'is-invalid': isEmpty(patient.gender) && dirty.patient.gender,
+                                'is-valid': !isEmpty(patient.gender) && dirty.patient.gender,
+                              }"
+                >
+                  <option value="" disabled selected>Select your gender</option>
+                  <option
+                    :value="type"
+                    v-for="type of init.gender"
+                    class="text-capitalize"
+                  >
+                    {{capitalize(type)}}
+                  </option>
+                </select>
+                <div class="valid-feedback">Gender is valid!</div>
+                <div class="invalid-feedback">Gender is required!</div>
+              </div>
+            </div>
+          </div>
+          <div class="title"><span>Location</span></div>
+          <div class="my-4">
+            <!-- Detail & State -->
+            <div class="row my-2">
+              <!-- Detail -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Detail</label>
+                <input
+                  type="text "
+                  class="form-control"
+                  v-model="patient.address.detail"
+                  placeholder="Enter your address detail"
+                  :class="{
+                                'is-invalid': isEmpty(patient.address.detail) && dirty.patient.address.detail,
+                                'is-valid': !isEmpty(patient.address.detail) && dirty.patient.address.detail,
+                              }"
+                />
+                <div class="valid-feedback">Detail is valid!</div>
+                <div class="invalid-feedback">Detail is required!</div>
+              </div>
+              <!-- State -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">State</label>
+                <input
+                  type="text "
+                  class="form-control"
+                  v-model="patient.address.state"
+                  placeholder="Enter your address state"
+                  :class="{
+                                'is-invalid': isEmpty(patient.address.state) && dirty.patient.address.state,
+                                'is-valid': !isEmpty(patient.address.state) && dirty.patient.address.state,
+                              }"
+                />
+                <div class="valid-feedback">State is valid!</div>
+                <div class="invalid-feedback">State is required!</div>
+              </div>
+            </div>
+            <!-- Area & Postcode-->
+            <div class="row my-2">
+              <!-- Area -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Area</label>
+                <input
+                  type=" text "
+                  class="form-control"
+                  v-model="patient.address.area"
+                  placeholder=" Enter your address area "
+                  :class="{
+                                'is-invalid': isEmpty(patient.address.area) && dirty.patient.address.area,
+                                'is-valid': !isEmpty(patient.address.area) && dirty.patient.address.area,
+                              }"
+                />
+                <div class="valid-feedback">Area is valid!</div>
+                <div class="invalid-feedback">Area is required!</div>
+              </div>
+              <!-- Postcode -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Postcode</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  v-model="patient.address.postcode"
+                  maxlength="5"
+                  placeholder=" Enter your address postcode "
+                  :class="{
+                                'is-invalid': (isEmpty(patient.address.postcode) || !isInLength(patient.address.postcode, metrics.postcodeLength)) && dirty.patient.address.postcode,
+                                'is-valid': !isEmpty(patient.address.postcode) && isInLength(patient.address.postcode, metrics.postcodeLength) && dirty.patient.address.postcode,
+                              }"
+                />
+                <div class="valid-feedback">Postcode is valid!</div>
+                <div
+                  v-if="isEmpty(patient.address.postcode) && dirty.patient.address.postcode"
+                  class="invalid-feedback"
+                >
+                  Postcode is required!
+                </div>
+                <div
+                  v-else-if="!isInLength(patient.address.postcode) && dirty.patient.address.postcode"
+                  class="invalid-feedback"
+                >
+                  {{getIsInLengthErrorMessage('postcode',
+                  patient.address.postcode.length, metrics.postcodeLength)}}
+                </div>
+              </div>
+            </div>
+            <!-- Country -->
+            <div class="row my-2">
+              <div class="col-md-6 my2">
+                <label class="form-label">Country</label>
+                <input
+                  type=" text "
+                  class="form-control"
+                  v-model="patient.address.country"
+                  placeholder=" Enter your country "
+                  :class="{
+                                'is-invalid': isEmpty(patient.address.country) && dirty.patient.address.country,
+                                'is-valid': !isEmpty(patient.address.country) && dirty.patient.address.country,
+                              }"
+                />
+                <div class="valid-feedback">Country is valid!</div>
+                <div class="invalid-feedback">Country is required!</div>
+              </div>
+            </div>
+          </div>
+          <div class="title"><span>Medical</span></div>
+          <div class="my-4">
+            <!-- Blood Type & Rhesus -->
+            <div class="row my-2">
+              <!-- Blood Type -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Blood Type</label>
+                <select
+                  class="form-control"
+                  v-model="patient.medical.bloodType"
+                  :class="{
+                                'is-invalid': isEmpty(patient.medical.bloodType) && dirty.patient.medical.bloodType,
+                                'is-valid': !isEmpty(patient.medical.bloodType) && dirty.patient.medical.bloodType,
+                              }"
+                >
+                  <option value="" disabled selected>
+                    Select your blood type
+                  </option>
+                  <option :value="type" v-for="type of init.medical.bloodTypes">
+                    {{type.toUpperCase()}}
+                  </option>
+                </select>
+                <div class="valid-feedback">Blood type is valid!</div>
+                <div class="invalid-feedback">Blood type is invalid!</div>
+              </div>
+              <!-- Blood rhesus -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Blood Rhesus</label>
+                <select
+                  class="form-control"
+                  v-model="patient.medical.bloodRhesus"
+                  :class="{
+                                'is-invalid': isEmpty(patient.medical.bloodRhesus) && dirty.patient.medical.bloodRhesus,
+                                'is-valid': !isEmpty(patient.medical.bloodRhesus) && dirty.patient.medical.bloodRhesus,
+                              }"
+                >
+                  <option value="" disabled selected>
+                    Select your blood rhesus
+                  </option>
+                  <option
+                    :value="rhesus.value"
+                    v-for="rhesus of init.medical.bloodRhesus"
+                    class="text-capitalize"
+                  >
+                    {{capitalize(rhesus.name)}}
+                  </option>
+                </select>
+                <div class="valid-feedback">Blood rhesus is valid!</div>
+                <div class="invalid-feedback">Blood rhesus is invalid!</div>
+              </div>
+            </div>
+            <!-- Organ Donate-->
+            <div class="row my-2">
+              <!-- Organ Donate -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Organ Donate</label>
+                <select
+                  class="form-control"
+                  v-model="patient.medical.organDonate"
+                  :class="{
+                                    'is-invalid': isEmpty(patient.medical.organDonate) && dirty.patient.medical.organDonate,
+                                    'is-valid': !isEmpty(patient.medical.organDonate) && dirty.patient.medical.organDonate,
+                                }"
+                >
+                  <option value="" disabled selected>
+                    Select your choice for organ donate
+                  </option>
+                  <option
+                    :value="choice.value"
+                    v-for="choice of init.medical.organDonate"
+                    class="text-capitalize"
+                  >
+                    {{capitalize(choice.name)}}
+                  </option>
+                </select>
+                <div class="valid-feedback">Organ donate choice is valid!</div>
+                <div class="invalid-feedback">
+                  Organ donate choice is invalid!
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Insurance -->
+          <div class="title element-end">
+            <span>Insurance</span>
+            <button
+              v-if="flagSearch"
+              type="button"
+              @click="onClickEditInsurance"
+              class="
+                text-end
+                btn btn-primary btn-block
+                text-capitalize
+                py-0
+                element-end
+              "
+            >
+              Edit
+            </button>
+          </div>
+          <div class="my-4">
+            <!-- Insurance ID & Organ Donate-->
+            <div class="row my-2">
+              <!-- Insurance Id -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Insurance ID </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="patient.medical.insuranceId"
+                  placeholder="Enter your insurance ID "
+                  :class="{
+                                'is-invalid': isEmpty(patient.medical.insuranceId) ? false : !flagUniqueInsuranceId,
+                                'is-valid': isEmpty(patient.medical.insuranceId) ? false : flagUniqueInsuranceId,
+                            }"
+                  list="insuranceId"
+                  @input="checkUniquePolicyNumber"
+                />
+                <datalist id="insuranceId">
+                  <option
+                    :value="insurance.policyNumber"
+                    v-for="insurance of init.insurances"
+                  >
+                    {{insurance.policyNumber}}
+                  </option>
+                </datalist>
+                <div class="valid-feedback">Insurance ID is valid!</div>
+                <div
+                  v-if="isEmpty(patient.medical.insuranceId)"
+                  class="invalid-feedback"
+                >
+                  Insurance ID is required!
+                </div>
+                <div
+                  v-else-if="!flagUniqueInsuranceId"
+                  class="invalid-feedback"
+                >
+                  Insurance ID is not unique!
+                </div>
+              </div>
+              <div
+                class="col-md-12 my-2 text-center insurance-modal-container"
+                v-if="flagInsuranceModal"
+              >
+                <div class="insurance-modal">
+                  <div class="title">Edit Insurance Policy Number</div>
+                  <div class="content">
+                    <div>
+                      <select class="form-control" v-model="editInsuranceId">
+                        <option
+                          :value="insurance.policyNumber"
+                          v-for="insurance of init.insurances"
+                        >
+                          {{insurance.policyNumber}}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="button text-center">
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-block mt-4 text-capitalize"
+                        @click="onClickDeleteInsurance"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-block mt-4 text-capitalize"
+                        @click="flagInsuranceModal = false"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="title"><span>Next of kin/ Contact Person</span></div>
+          <div class="my-4">
+            <!-- Name & Relationship -->
+            <div class="row my-2">
+              <div class="col-md-6 my-2">
+                <label class="form-label">Name</label>
+                <input
+                  type="text "
+                  class="form-control"
+                  v-model="patient.medical.nextOfKin.name"
+                  placeholder="Enter your name"
+                  :class="{
+                                'is-invalid': isEmpty(patient.medical.nextOfKin.name) && dirty.patient.medical.nextOfKin.name,
+                                'is-valid': !isEmpty(patient.medical.nextOfKin.name) && dirty.patient.medical.nextOfKin.name,
+                              }"
+                />
+                <div class="valid-feedback">Name is valid!</div>
+                <div class="invalid-feedback">Name is invalid!</div>
+              </div>
+              <div class="col-md-6 my-2">
+                <label class="form-label">Relationship to patient</label>
+                <input
+                  type="text "
+                  class="form-control"
+                  v-model="patient.medical.nextOfKin.relationship"
+                  placeholder="Enter your relationship to patient"
+                  :class="{
+                                'is-invalid': isEmpty(patient.medical.nextOfKin.relationship) && dirty.patient.medical.nextOfKin.relationship,
+                                'is-valid': !isEmpty(patient.medical.nextOfKin.relationship) && dirty.patient.medical.nextOfKin.relationship,
+                              }"
+                />
+                <div class="valid-feedback">
+                  Relationship to patient is valid!
+                </div>
+                <div class="invalid-feedback">
+                  Relationship to patient is invalid!
+                </div>
+              </div>
+            </div>
+            <!-- Telephone Home & Mobile-->
+            <div class="row my-2">
+              <!-- Home -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Telephone(Home)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="patient.medical.nextOfKin.phoneNumberHome"
+                  placeholder="Enter your phone number(home) "
+                  :class="{
+                                'is-invalid': isEmpty(patient.medical.nextOfKin.phoneNumberHome) && dirty.patient.medical.nextOfKin.phoneNumberHome,
+                                'is-valid': !isEmpty(patient.medical.nextOfKin.phoneNumberHome) && dirty.patient.medical.nextOfKin.phoneNumberHome,
+                              }"
+                />
+                <div class="valid-feedback">Phone number(home) is valid!</div>
+                <div class="invalid-feedback">
+                  Phone number(home) is invalid!
+                </div>
+              </div>
+              <!-- Mobile -->
+              <div class="col-md-6 my-2">
+                <label class="form-label">Phone number(mobile)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="patient.medical.nextOfKin.phoneNumberMobile"
+                  placeholder=" Enter your phone number(mobile)"
+                  :class="{
+                                'is-invalid': isEmpty(patient.medical.nextOfKin.phoneNumberMobile) && dirty.patient.medical.nextOfKin.phoneNumberMobile,
+                                'is-valid': !isEmpty(patient.medical.nextOfKin.phoneNumberMobile) && dirty.patient.medical.nextOfKin.phoneNumberMobile,
+                              }"
+                />
+                <div class="valid-feedback">Phone number(mobile) is valid!</div>
+                <div class="invalid-feedback">
+                  Phone number(mobile) is invalid!
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Submit button -->
+          <div class="text-center">
+            <button
+              type="submit"
+              class="btn btn-primary btn-block mb-4 text-capitalize"
+            >
+              {{flagSearch ? 'Update & Register':'Register'}}
+            </button>
+            <button
+              @click="onClickReset"
+              type="reset"
+              class="btn btn-primary btn-block mb-4 text-capitalize"
+            >
+              Reset
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+
+  <style scoped>
+    .title.element-end {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .insurance-modal-container {
+      position: fixed;
+      min-width: 100vw;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      top: 0;
+      left: 0;
+      transition: 1s;
+    }
+
+    .insurance-modal {
+      position: relative;
+      display: flex;
+      justify-self: center;
+      align-self: center;
+      z-index: 2;
+      flex-direction: column;
+      background-color: antiquewhite;
+      padding: 30px 50px;
+      max-width: 400px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgb(186, 186, 186);
+    }
+
+    .insurance-modal .title {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+    }
+  </style>
+</html>

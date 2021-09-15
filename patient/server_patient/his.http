@@ -1,0 +1,76 @@
+### get all patients
+GET http://localhost:3000/api/patients
+
+### get single patient by identifier number
+GET http://localhost:3000/api/patient?patient_identification=981223017135
+
+### add single patient
+POST http://localhost:3000/api/patient
+content-type: application/json
+
+{
+    "name": {
+        "first": "Yao Jun",
+        "last": "Chon"
+    },
+    "dateOfBirth": "2021-06-18",
+    "gender": "male",
+    "phoneNumber": 60197710423,
+    "identificationNumber": "981223017133",
+    "email": "p2@gmail.com",
+    "address": {        
+        "detail": "103",
+        "state": "Johor",
+        "area": "Kulai",
+        "postcode": "81000",
+        "country": "Malaysia"
+    },
+    "medical": {
+        "bloodType": "A",
+        "bloodRhesus": "-1",
+        "organDonate": "1",
+        "insuranceId": "123456",
+        "nextOfKin": {
+            "name": "Chon Yu Hui",
+            "relationship": "sister",
+            "phoneNumberHome": 6076639608,
+            "phoneNumberMobile": 60108888543
+        }
+    }
+}
+###
+POST http://localhost:3000/api/insurance
+Content-Type: application/json
+
+{
+    "medical": {
+        "insuranceId": 7894564
+    },
+    "id": 1
+}
+
+###
+GET http://localhost:3000/api/insurance?policy_number=1234567
+Content-Type: application/json
+
+###
+GET http://localhost:3000/api/departments
+Content-Type: application/json
+
+###
+GET http://localhost:3000/api/queue?patient_id=1
+Content-Type: application/json
+
+###
+POST http://localhost:3000/api/queue
+Content-Type: application/json
+
+{
+  "patientId": "1",
+  "type": 0,
+  "returnVisit": "",
+  "takeMedicine": "",
+  "consultationReason": "Pain",
+  "insuranceId": "123456",
+  "departmentId": 1
+}

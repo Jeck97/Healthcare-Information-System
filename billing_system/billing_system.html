@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HIS - Billing System</title>
+
+    <link rel="stylesheet" href="billing_system_style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+    <script>
+      var bill_result;
+      var created_bill_result;
+      var manageTotalPrice;
+      var manage_bill_details_result;
+      var payment_result;
+      $(function () {
+        $(".bill-details-content").hide();
+        $(".manage-bills-content").hide();
+        $(".manage-bill-details-content").hide();
+        $(".payment-history-content").hide();
+
+        $(".search-button").click(function () {
+          let selectedOption = $(".day-dropdown")
+            .children("option:selected")
+            .val();
+
+          $.ajax({
+            url: "search_bill.php",
+            type: "POST",
+            dataType: "json",
+            data: {
+              searchType: selectedOption,
+            },
+            cache: false,
+            success: function (jsonResult) {
+              bill_result = JSON.parse(JSON.stringify(jsonResult));
+
+              if (bill_result.hasOwnProperty("message")) {
+                $(".bill-table td").parent().remove();
+                $(".bill-table").append(
+                  "<tr class='row-instruction'><td colspan='6' align='center'>Please select filter and press search button</td></tr>"
+                );
+                alert(bill_result["message"]);
+              } else {
+                $(".bill-table").find("tr:gt(0)").remove();
+                processResult(bill_result);
+              }
+            },
+          }).fail(function (jsXHR, textStatus, errorThrown) {
+            console.log(
+              "Status: " + textStatus + "\nError thrown: " + errorThrown
+            );
+          });
+        });
+
+        $(".confirm-button").click(function () {
+          let confirmation = confirm("Are you sure to confirm this bill?");
+          if (confirmation == true) {
+            $.ajax({
+              url: "create_bill.php",
+              type: "POST",
+              data: {
+                billId: $(this).attr("value"),
+                grandTotal: $(this).attr("data-total"),
+              },
+              cache: false,
+              success: function (result) {
+                if (result != "Success") alert(result);
+                else alert("Your bill has been created successfully");
+
+                // Set table property
+                let row = "#row" + $(".confirm-button").attr("data-row");
+                $("table").css({ "margin-top": "30px" });
+
+                $(".item-table").find("tr:gt(0)").remove();
+                $(".bill-details-content").hide();
+                $(".bill-content").show();
+                $(row).remove();
+
+                if ($(".bill-content tr").length == 1) {
+                  $(".bill-table").append(
+                    "<tr class='row-instruction'><td colspan='6' align='center'>Please select filter and press search button</td></tr>"
+                  );
+                }
+              },
+            });
+          }
+        });
+
+        $(".back-button").click(function () {
+          $(".item-table").find("tr:gt(0)").remove();
+          $(".bill-details-content").hide();
+
+          // Set table property
+          $("table").css({ "margin-top": "30px" });
+
+          $(".bill-content").show();
+        });
+
+        $(".manage-back-button").click(function () {
+          $(".manage-item-table").find("tr:gt(0)").remove();
+          $(".manage-bill-details-content").hide();
+
+          // Set table property
+          $("table").css({ "margin-top": "30px" });
+
+          $(".manage-bills-content").show();
+        });
+
+        $(".payment-button").click(function () {
+          // Open the modal box
+          $(".bg-modal").addClass("bg-active");
+          $("body").css("overflow", "hidden");
+
+          $(".subtotal-field").val(
+            Math.round((manageTotalPrice * 100) / 100).toFixed(2)
+          );
+          $(".grand-total-field").val(
+            Math.round((manageTotalPrice * 100) / 100).toFixed(2)
+          );
+        });
+
+        $(".make-payment-button").click(function () {
+          if (!$(".amount-receive-field").val()) {
+            alert("Please enter amount receive");
+          } else if ($(".amount-receive-field").val() < manageTotalPrice) {
+            alert("Please enter amount larger or equal to grand total");
+          } else if ($(".amount-receive-field").val() > manageTotalPrice) {
+            let confirmation = confirm(
+              "Are you sure to confirm payment for this bill?"
+            );
+            if (confirmation == true) {
+              $.ajax({
+                url: "make_payment.php",
+                type: "POST",
+                data: {
+                  billId: $(".payment-button").attr("value"),
+                },
+                cache: false,
+                success: function (result) {
+                  if (result == "Success") {
+                    // Close the modal box
+                    $(".bg-modal").removeClass("bg-active");
+                    $("body").css("overflow", "scroll");
+
+                    let parentTag = $("#bill-form");
+                    let row = $(".manage-bills-action-button").attr("value");
+                    let childrenTag =
+                      "<div class='patient-info' style='display:flex;'>" +
+                      "<div class='patient-first-info' style='width:50%;'>" +
+                      "<div class='patient-name' style='margin-bottom:10px;'>" +
+                      "Patient Name: " +
+                      created_bill_result[row].name +
+                      "</div>" +
+                      "<div class='patient-ic' style='margin-bottom:10px;'>" +
+                      "Patient IC Number: " +
+                      created_bill_result[row].identification_number +
+                      "</div>" +
+                      "<div class='patient-address' style='margin-bottom:10px;'>" +
+                      "Patient Address: " +
+                      created_bill_result[row].address +
+                      "</div>" +
+                      "</div>" +
+                      "<div class='patient-second-info' style='width:50%;'>" +
+                      "<div class='patient-phone-no' style='margin-bottom:10px;'>" +
+                      "Phone Number: " +
+                      created_bill_result[row].phone_number +
+                      "</div>" +
+                      "<div class='payment-mode' style='margin-bottom:10px;'>" +
+                      "Mode of Payment: Cash" +
+                      "</div>" +
+                      "</div>" +
+                      "</div>" +
+                      "<div class='bill-no-container' style='margin-top:20px;'>" +
+                      "Bill Number: " +
+                      created_bill_result[row].bill_id +
+                      "</div>" +
+                      "<div class='payment-info-container' style='margin-top:20px;'>" +
+                      "<div class='payment-info-table'>" +
+                      "<table class='payment-table' style='border-collapse:collapse;width:100%;text-align:center;'>" +
+                      "<tr>" +
+                      "<td>Item Code</td>" +
+                      "<td>Item Description</td>" +
+                      "<td>Item Quantity</td>" +
+                      "<td>Unit Price(RM)</td>" +
+                      "<td>Total Amount(RM)</td>" +
+                      "</tr>" +
+                      "</table>" +
+                      "</div>" +
+                      "</div>" +
+                      "<div class='price-container' style='display:flex;flex-flow:column;align-items:flex-end;margin-top:30px;margin-right:30px;'>" +
+                      "<div class='total-quantity-container' style='margin-bottom:10px;'>" +
+                      "Total Item Quantity: " +
+                      "<div style='min-width:100px;display:inline-block;'>" +
+                      "<label class='bill-form-total-quantity'></label>" +
+                      "</div>" +
+                      "</div>" +
+                      "<div class='service-charge-container' style='margin-bottom:10px;'>" +
+                      "Service Charge (RM): " +
+                      "<div style='min-width:100px;display:inline-block;'>" +
+                      "<label class='bill-form-service-charge'></label>" +
+                      "</div>" +
+                      "</div>" +
+                      "<div class='grand-total-container' style='margin-bottom:10px;'>" +
+                      "Grand Total (RM): " +
+                      "<div style='min-width:100px;display:inline-block;'>" +
+                      "<label class='bill-form-grand-total'></label>" +
+                      "</div>" +
+                      "</div>" +
+                      "</div>" +
+                      "<div class='greet-container' style='display:flex;justify-content:center;margin-top:80px;width:100%;'>" +
+                      "<div>" +
+                      "****Thank You****" +
+                      "</div>" +
+                      "</div>";
+
+                    parentTag.append(childrenTag);
+
+                    // Insert items into bill table
+                    let tableTag = $(".payment-table");
+                    let rowTags = "";
+                    var totalItem = 0;
+                    for (
+                      var i = 0;
+                      i < manage_bill_details_result.length;
+                      i++
+                    ) {
+                      if (manage_bill_details_result[i].service_id != null) {
+                        var servicePrice = Math.round(
+                          (manage_bill_details_result[i].service_price * 100) /
+                            100
+                        ).toFixed(2);
+
+                        rowTags =
+                          "<tr>" +
+                          "<td>" +
+                          manage_bill_details_result[i].service_id +
+                          "</td>" +
+                          "<td>" +
+                          manage_bill_details_result[i].service_name +
+                          "</td>" +
+                          "<td>" +
+                          1 +
+                          "</td>" +
+                          "<td>" +
+                          servicePrice +
+                          "</td>" +
+                          "<td>" +
+                          servicePrice +
+                          "</td>" +
+                          "</tr>";
+                        tableTag.append(rowTags);
+                        totalItem += 1;
+                      }
+                      if (manage_bill_details_result[i].drug_id != null) {
+                        var itemPrice = Math.round(
+                          (manage_bill_details_result[i].order_quantity *
+                            manage_bill_details_result[i].order_drug_quantity *
+                            manage_bill_details_result[i].drug_price_per_unit *
+                            100) /
+                            100
+                        ).toFixed(2);
+                        rowTags =
+                          "<tr>" +
+                          "<td>" +
+                          manage_bill_details_result[i].drug_id +
+                          "</td>" +
+                          "<td>" +
+                          manage_bill_details_result[i].drug_name +
+                          "</td>" +
+                          "<td>" +
+                          manage_bill_details_result[i].order_quantity *
+                            manage_bill_details_result[i].order_drug_quantity +
+                          "</td>" +
+                          "<td>" +
+                          manage_bill_details_result[i].drug_price_per_unit +
+                          "</td>" +
+                          "<td>" +
+                          itemPrice +
+                          "</td>" +
+                          "</tr>";
+                        tableTag.append(rowTags);
+                        totalItem +=
+                          manage_bill_details_result[i].order_quantity *
+                          manage_bill_details_result[i].order_drug_quantity;
+                      }
+                    }
+
+                    $(".bill-form-total-quantity").append(totalItem);
+                    $(".bill-form-service-charge").append("0.00");
+                    $(".bill-form-grand-total").append(
+                      Math.round((manageTotalPrice * 100) / 100).toFixed(2)
+                    );
+
+                    printBill();
+                    alert("Payment has been made successfully!");
+                    // Remove div from bill form
+                    $(".patient-info").remove();
+                    $(".bill-no-container").remove();
+                    $(".payment-info-container").remove();
+                    $(".price-container").remove();
+                    $(".greet-container").remove();
+
+                    $(".manage-bills-content").show();
+                    $(".manage-bill-details-content").hide();
+
+                    let tableRow =
+                      "#manage-row-" + $(".payment-button").attr("data-row");
+                    $("table").css({ "margin-top": "30px" });
+
+                    $(".manage-item-table").find("tr:gt(0)").remove();
+                    $(tableRow).remove();
+                    $(".amount-receive-field").val("");
+                    $(".change-field").val("");
+
+                    if ($(".manage-bills-table tr").length == 1) {
+                      $(".manage-bills-table").append(
+                        "<tr class='row-instruction'><td colspan='6' align='center'>Please select filter and press search button</td></tr>"
+                      );
+                    }
+                  } else {
+                    alert(result);
+                  }
+                },
+              });
+            }
+          }
+        });
+
+        $(".amount-receive-field").on("input", function (e) {
+          if ($(".amount-receive-field").val() > manageTotalPrice) {
+            let change = $(".amount-receive-field").val() - manageTotalPrice;
+            $(".change-field").val(Math.round((change * 100) / 100).toFixed(2));
+          }
+          if ($(".amount-receive-field").val() < manageTotalPrice) {
+            $(".change-field").val("");
+          }
+        });
+
+        $(".modal-close").click(function () {
+          // Close the modal box
+          $(".bg-modal").removeClass("bg-active");
+          $("body").css("overflow", "scroll");
+        });
+
+        $(".billing-text").click(function () {
+          if (
+            $(".bill-content").is(":hidden") &&
+            ($(".manage-bills-content").is(":visible") ||
+              $(".manage-bill-details-content").is(":visible") ||
+              $(".payment-history-content").is(":visible"))
+          ) {
+            if ($(".item-table tr").length > 1) {
+              $(".billing-text").css("background-color", "#dedede");
+              $(".manage-bills-text").css("background-color", "white");
+              $(".payment-history-text").css("background-color", "white");
+              $(".bill-details-content").show();
+              $(".manage-bills-content").hide();
+              $(".manage-bill-details-content").hide();
+              $(".payment-history-content").hide();
+              $("table").css({ "margin-top": "0" });
+            } else if ($(".item-table tr").length == 1) {
+              $(".billing-text").css("background-color", "#dedede");
+              $(".manage-bills-text").css("background-color", "white");
+              $(".payment-history-text").css("background-color", "white");
+              $(".bill-content").show();
+              $(".manage-bills-content").hide();
+              $(".manage-bill-details-content").hide();
+              $(".payment-history-content").hide();
+              $("table").css({ "margin-top": "30px" });
+            }
+          }
+        });
+
+        $(".manage-bills-text").click(function () {
+          if (
+            $(".manage-bills-content").is(":hidden") &&
+            ($(".bill-content").is(":visible") ||
+              $(".bill-details-content").is(":visible") ||
+              $(".payment-history-content").is(":visible"))
+          ) {
+            if ($(".manage-item-table tr").length > 1) {
+              $(".billing-text").css("background-color", "white");
+              $(".manage-bills-text").css("background-color", "#dedede");
+              $(".payment-history-text").css("background-color", "white");
+              $(".manage-bill-details-content").show();
+              $(".bill-details-content").hide();
+              $(".bill-content").hide();
+              $(".payment-history-content").hide();
+              $("table").css({ "margin-top": "0" });
+            } else if ($(".manage-item-table tr").length == 1) {
+              $(".billing-text").css("background-color", "white");
+              $(".manage-bills-text").css("background-color", "#dedede");
+              $(".payment-history-text").css("background-color", "white");
+              $(".manage-bills-content").show();
+              $(".bill-details-content").hide();
+              $(".bill-content").hide();
+              $(".payment-history-content").hide();
+              $("table").css({ "margin-top": "30px" });
+            }
+          }
+        });
+
+        $(".payment-history-text").click(function () {
+          if (
+            $(".payment-history-content").is(":hidden") &&
+            ($(".bill-content").is(":visible") ||
+              $(".bill-details-content").is(":visible") ||
+              $(".manage-bills-content").is(":visible"))
+          ) {
+            $(".billing-text").css("background-color", "white");
+            $(".manage-bills-text").css("background-color", "white");
+            $(".payment-history-text").css("background-color", "#dedede");
+            $(".manage-bills-content").hide();
+            $(".bill-details-content").hide();
+            $(".bill-content").hide();
+            $(".payment-history-content").show();
+          }
+        });
+
+        $(".manage-bills-dropdown").change(function () {
+          if ($(this).val() != "IC Number") {
+            $(".ic-number-field").prop("disabled", true);
+          } else {
+            $(".ic-number-field").prop("disabled", false);
+          }
+        });
+
+        $(".payment-history-dropdown").change(function () {
+          if ($(this).val() != "IC Number") {
+            $(".payment-history-ic-number-field").prop("disabled", true);
+          } else {
+            $(".payment-history-ic-number-field").prop("disabled", false);
+          }
+        });
+
+        $(".payment-history-search-button").click(function () {
+          let selectedOption = $(".payment-history-dropdown")
+            .children("option:selected")
+            .val();
+
+          if (selectedOption == "IC Number") {
+            selectedOption = $(".ic-number-field").val();
+            if (selectedOption == "") {
+              alert("Please enter patient ic number");
+              $(".payment-history-table td").parent().remove();
+              $(".payment-history-table").append(
+                "<tr class='row-instruction'><td colspan='6' align='center'>Please select filter and press search button</td></tr>"
+              );
+            }
+          }
+
+          if (selectedOption != "") {
+            $.ajax({
+              url: "search_payment.php",
+              type: "POST",
+              dataType: "json",
+              data: {
+                searchType: selectedOption,
+              },
+              cache: false,
+              success: function (jsonResult) {
+                payment_result = JSON.parse(JSON.stringify(jsonResult));
+
+                if (payment_result.hasOwnProperty("message")) {
+                  $(".payment-history-table td").parent().remove();
+                  $(".payment-history-table").append(
+                    "<tr class='row-instruction'><td colspan='6' align='center'>Please select filter and press search button</td></tr>"
+                  );
+                  alert(payment_result["message"]);
+                } else {
+                  $(".payment-history-table").find("tr:gt(0)").remove();
+                  processPaymentResult(payment_result);
+                }
+              },
+            }).fail(function (jsXHR, textStatus, errorThrown) {
+              console.log(
+                "Status: " + textStatus + "\nError thrown: " + errorThrown
+              );
+            });
+          }
+        });
+
+        $(".manage-bills-search-button").click(function () {
+          let selectedOption = $(".manage-bills-dropdown")
+            .children("option:selected")
+            .val();
+
+          if (selectedOption == "IC Number") {
+            selectedOption = $(".ic-number-field").val();
+            if (selectedOption == "") {
+              alert("Please enter patient ic number");
+              $(".manage-bills-table td").parent().remove();
+              $(".manage-bills-table").append(
+                "<tr class='row-instruction'><td colspan='6' align='center'>Please select filter and press search button</td></tr>"
+              );
+            }
+          }
+
+          if (selectedOption != "") {
+            $.ajax({
+              url: "search_created_bills.php",
+              type: "POST",
+              dataType: "json",
+              data: {
+                searchType: selectedOption,
+              },
+              cache: false,
+              success: function (jsonResult) {
+                created_bill_result = JSON.parse(JSON.stringify(jsonResult));
+
+                if (created_bill_result.hasOwnProperty("message")) {
+                  $(".manage-bills-table td").parent().remove();
+                  $(".manage-bills-table").append(
+                    "<tr class='row-instruction'><td colspan='6' align='center'>Please select filter and press search button</td></tr>"
+                  );
+                  alert(created_bill_result["message"]);
+                } else {
+                  $(".manage-bills-table").find("tr:gt(0)").remove();
+                  processCreatedResult(created_bill_result);
+                }
+              },
+            }).fail(function (jsXHR, textStatus, errorThrown) {
+              console.log(
+                "Status: " + textStatus + "\nError thrown: " + errorThrown
+              );
+            });
+          }
+        });
+
+        $("body").on("click", ".action-button", function () {
+          let confirmation = confirm(
+            "Are you sure to generate bill for the selected record?"
+          );
+          var row = $(this).attr("value");
+          var bill_id = $(this).attr("data-id");
+          if (confirmation == true) {
+            $.ajax({
+              url: "search_bill_details.php",
+              type: "POST",
+              data: {
+                bill_id: bill_id,
+              },
+              dataType: "json",
+              cache: false,
+              success: function (jsonResult) {
+                var bill_details_result = JSON.parse(
+                  JSON.stringify(jsonResult)
+                );
+
+                if (bill_details_result.hasOwnProperty("message")) {
+                  alert(bill_details_result["message"]);
+                } else {
+                  insertBillDetails(bill_details_result, row);
+                }
+              },
+            });
+          }
+        });
+
+        $("body").on("click", ".manage-bills-action-button", function () {
+          let confirmation = confirm("Are you sure to proceed to payment?");
+          let row = $(this).attr("value");
+          let manage_bills_id = $(this).attr("data-id");
+          if (confirmation == true) {
+            $.ajax({
+              url: "search_bill_details.php",
+              type: "POST",
+              data: {
+                bill_id: manage_bills_id,
+              },
+              dataType: "json",
+              cache: false,
+              success: function (jsonResult) {
+                manage_bill_details_result = JSON.parse(
+                  JSON.stringify(jsonResult)
+                );
+                if (manage_bill_details_result.hasOwnProperty("message")) {
+                  alert(manage_bill_details_result["message"]);
+                } else {
+                  manageCreatedBillDetails(manage_bill_details_result, row);
+                }
+              },
+            });
+          }
+        });
+
+        $("body").on("click", ".payment-action-button", function () {
+          let confirmation = confirm("Are you sure to print this receipt?");
+          if (confirmation == true) {
+            let billId = $(this).attr("data-id");
+            $.ajax({
+              url: "search_payment_details.php",
+              type: "POST",
+              data: {
+                bill_id: billId,
+              },
+              dataType: "json",
+              cache: false,
+              success: function (jsonResult) {
+                let payment_details = JSON.parse(JSON.stringify(jsonResult));
+                if (payment_details.hasOwnProperty("message")) {
+                  alert(payment_details["message"]);
+                } else {
+                  let parentTag = $("#bill-form");
+                  let childrenTag =
+                    "<div class='patient-info' style='display:flex;'>" +
+                    "<div class='patient-first-info' style='width:50%;'>" +
+                    "<div class='patient-name' style='margin-bottom:10px;'>" +
+                    "Patient Name: " +
+                    payment_result[0].name +
+                    "</div>" +
+                    "<div class='patient-ic' style='margin-bottom:10px;'>" +
+                    "Patient IC Number: " +
+                    payment_result[0].identification_number +
+                    "</div>" +
+                    "<div class='patient-address' style='margin-bottom:10px;'>" +
+                    "Patient Address: " +
+                    payment_result[0].address +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='patient-second-info' style='width:50%;'>" +
+                    "<div class='patient-phone-no' style='margin-bottom:10px;'>" +
+                    "Phone Number: " +
+                    payment_result[0].phone_number +
+                    "</div>" +
+                    "<div class='payment-mode' style='margin-bottom:10px;'>" +
+                    "Mode of Payment: Cash" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='bill-no-container' style='margin-top:20px;'>" +
+                    "Bill Number: " +
+                    payment_result[0].bill_id +
+                    "</div>" +
+                    "<div class='payment-info-container' style='margin-top:20px;'>" +
+                    "<div class='payment-info-table'>" +
+                    "<table class='payment-table' style='border-collapse:collapse;width:100%;text-align:center;'>" +
+                    "<tr>" +
+                    "<td>Item Code</td>" +
+                    "<td>Item Description</td>" +
+                    "<td>Item Quantity</td>" +
+                    "<td>Unit Price(RM)</td>" +
+                    "<td>Total Amount(RM)</td>" +
+                    "</tr>" +
+                    "</table>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='price-container' style='display:flex;flex-flow:column;align-items:flex-end;margin-top:30px;margin-right:30px;'>" +
+                    "<div class='total-quantity-container' style='margin-bottom:10px;'>" +
+                    "Total Item Quantity: " +
+                    "<div style='min-width:100px;display:inline-block;'>" +
+                    "<label class='bill-form-total-quantity'></label>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='service-charge-container' style='margin-bottom:10px;'>" +
+                    "Service Charge (RM): " +
+                    "<div style='min-width:100px;display:inline-block;'>" +
+                    "<label class='bill-form-service-charge'></label>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='grand-total-container' style='margin-bottom:10px;'>" +
+                    "Grand Total (RM): " +
+                    "<div style='min-width:100px;display:inline-block;'>" +
+                    "<label class='bill-form-grand-total'></label>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='greet-container' style='display:flex;justify-content:center;margin-top:80px;width:100%;'>" +
+                    "<div>" +
+                    "****Thank You****" +
+                    "</div>" +
+                    "</div>";
+                  parentTag.append(childrenTag);
+
+                  let tableTag = $(".payment-table");
+                  let rowTags = "";
+                  let totalItem = 0;
+                  let paymentTotalPrice;
+                  for (let h = 0; h < payment_details.length; h++) {
+                    if (payment_details[h].service_id != null) {
+                      var servicePrice = Math.round(
+                        (payment_details[h].service_price * 100) / 100
+                      ).toFixed(2);
+                      rowTags =
+                        "<tr>" +
+                        "<td>" +
+                        payment_details[h].service_id +
+                        "</td>" +
+                        "<td>" +
+                        payment_details[h].service_name +
+                        "</td>" +
+                        "<td>" +
+                        1 +
+                        "</td>" +
+                        "<td>" +
+                        servicePrice +
+                        "</td>" +
+                        "<td>" +
+                        servicePrice +
+                        "</td>" +
+                        "</tr>";
+                      tableTag.append(rowTags);
+                      paymentTotalPrice += Number(servicePrice);
+                      totalItem += 1;
+                    }
+                    if (payment_details[h].drug_id != null) {
+                      var itemPrice = Math.round(
+                        (payment_details[h].order_quantity *
+                          payment_details[h].order_drug_quantity *
+                          payment_details[h].drug_price_per_unit *
+                          100) /
+                          100
+                      ).toFixed(2);
+                      rowTags =
+                        "<tr>" +
+                        "<td>" +
+                        payment_details[h].drug_id +
+                        "</td>" +
+                        "<td>" +
+                        payment_details[h].drug_name +
+                        "</td>" +
+                        "<td>" +
+                        payment_details[h].order_quantity *
+                          payment_details[h].order_drug_quantity +
+                        "</td>" +
+                        "<td>" +
+                        payment_details[h].drug_price_per_unit +
+                        "</td>" +
+                        "<td>" +
+                        itemPrice +
+                        "</td>" +
+                        "</tr>";
+                      tableTag.append(rowTags);
+                      paymentTotalPrice += Number(itemPrice);
+                      totalItem +=
+                        payment_details[h].order_quantity *
+                        payment_details[h].order_drug_quantity;
+                    }
+                  }
+                  $(".bill-form-total-quantity").append(totalItem);
+                  $(".bill-form-service-charge").append("0.00");
+                  $(".bill-form-grand-total").append(
+                    Math.round((paymentTotalPrice * 100) / 100).toFixed(2)
+                  );
+
+                  printBill();
+                  // Remove div from bill form
+                  $(".patient-info").remove();
+                  $(".bill-no-container").remove();
+                  $(".payment-info-container").remove();
+                  $(".price-container").remove();
+                  $(".greet-container").remove();
+                }
+              },
+            });
+          }
+        });
+      });
+
+      function processPaymentResult(paymentResult) {
+        let tableTag = $(".payment-history-table");
+        let rowTags = "";
+        for (var i = 0; i < paymentResult.length; i++) {
+          rowTags =
+            "<tr id='payment-row-" +
+            i +
+            "'>" +
+            "<td>" +
+            paymentResult[i].payment_id +
+            "</td>" +
+            "<td>" +
+            paymentResult[i].name +
+            "</td>" +
+            "<td>" +
+            paymentResult[i].identification_number +
+            "</td>" +
+            "<td>" +
+            paymentResult[i].date +
+            "</td>" +
+            "<td>" +
+            paymentResult[i].phone_number +
+            "</td>" +
+            "<td><button class='payment-action-button' value='" +
+            i +
+            "' data-id='" +
+            paymentResult[i].bill_id +
+            "' title='Print'><i class='far fa-file'></i></button></td>" +
+            "</tr>";
+          tableTag.append(rowTags);
+        }
+      }
+
+      function insertBillDetails(bill_details_result, row) {
+        $(".bill-content").hide();
+        $(".bill-details-content").show();
+
+        $("table").css({ "margin-top": "0" });
+
+        $("#bill-no-field").val(bill_result[row].bill_id);
+        $("#date-field").val(bill_result[row].date);
+        $("#ic-no-field").val(bill_result[row].identification_number);
+        $("#name-field").val(bill_result[row].name);
+        $("#gender-field").val(bill_result[row].gender);
+        $("#address-field").val(bill_result[row].address);
+        $("#phone-no-field").val(bill_result[row].phone_number);
+        $("#address-field").attr("title", bill_result[row].address);
+
+        var tableTag = $(".item-table");
+        var rowTags = "";
+        var totalPrice = 0;
+        var totalItem = 0;
+        for (var i = 0; i < bill_details_result.length; i++) {
+          if (bill_details_result[i].service_id != null) {
+            var servicePrice = Math.round(
+              (bill_details_result[i].service_price * 100) / 100
+            ).toFixed(2);
+
+            rowTags =
+              "<tr>" +
+              "<td>" +
+              bill_details_result[i].service_id +
+              "</td>" +
+              "<td>" +
+              bill_details_result[i].service_name +
+              "</td>" +
+              "<td>" +
+              1 +
+              "</td>" +
+              "<td>" +
+              servicePrice +
+              "</td>" +
+              "<td>" +
+              servicePrice +
+              "</td>" +
+              "</tr>";
+            tableTag.append(rowTags);
+            totalPrice += Number(servicePrice);
+            totalItem += 1;
+          }
+          if (bill_details_result[i].drug_id != null) {
+            var itemPrice = Math.round(
+              (bill_details_result[i].order_quantity *
+                bill_details_result[i].order_drug_quantity *
+                bill_details_result[i].drug_price_per_unit *
+                100) /
+                100
+            ).toFixed(2);
+            rowTags =
+              "<tr>" +
+              "<td>" +
+              bill_details_result[i].drug_id +
+              "</td>" +
+              "<td>" +
+              bill_details_result[i].drug_name +
+              "</td>" +
+              "<td>" +
+              bill_details_result[i].order_quantity *
+                bill_details_result[i].order_drug_quantity +
+              "</td>" +
+              "<td>" +
+              bill_details_result[i].drug_price_per_unit +
+              "</td>" +
+              "<td>" +
+              itemPrice +
+              "</td>" +
+              "</tr>";
+            tableTag.append(rowTags);
+            totalPrice += Number(itemPrice);
+            totalItem +=
+              bill_details_result[i].order_quantity *
+              bill_details_result[i].order_drug_quantity;
+          }
+        }
+        $(".total-item-quantity-field").attr("value", totalItem);
+        $(".grand-total-quantity-field").attr(
+          "value",
+          Math.round((totalPrice * 100) / 100).toFixed(2)
+        );
+        $(".confirm-button").attr("value", bill_details_result[0].bill_id);
+        $(".confirm-button").attr("data-total", totalPrice);
+        $(".confirm-button").attr("data-row", row);
+      }
+
+      function manageCreatedBillDetails(manage_bill_details_result, row) {
+        $(".manage-bills-content").hide();
+        $(".manage-bill-details-content").show();
+
+        $("table").css({ "margin-top": "0" });
+
+        $("#manage-bill-no-field").val(created_bill_result[row].bill_id);
+        $("#manage-date-field").val(created_bill_result[row].date);
+        $("#manage-ic-no-field").val(
+          created_bill_result[row].identification_number
+        );
+        $("#manage-name-field").val(created_bill_result[row].name);
+        $("#manage-gender-field").val(created_bill_result[row].gender);
+        $("#manage-address-field").val(created_bill_result[row].address);
+        $("#manage-phone-no-field").val(created_bill_result[row].phone_number);
+        $("#manage-address-field").attr(
+          "title",
+          created_bill_result[row].address
+        );
+
+        var tableTag = $(".manage-item-table");
+        var rowTags = "";
+        manageTotalPrice = 0;
+        var totalItem = 0;
+        for (var i = 0; i < manage_bill_details_result.length; i++) {
+          if (manage_bill_details_result[i].service_id != null) {
+            var servicePrice = Math.round(
+              (manage_bill_details_result[i].service_price * 100) / 100
+            ).toFixed(2);
+
+            rowTags =
+              "<tr>" +
+              "<td>" +
+              manage_bill_details_result[i].service_id +
+              "</td>" +
+              "<td>" +
+              manage_bill_details_result[i].service_name +
+              "</td>" +
+              "<td>" +
+              1 +
+              "</td>" +
+              "<td>" +
+              servicePrice +
+              "</td>" +
+              "<td>" +
+              servicePrice +
+              "</td>" +
+              "</tr>";
+            tableTag.append(rowTags);
+            manageTotalPrice += Number(servicePrice);
+            totalItem += 1;
+          }
+          if (manage_bill_details_result[i].drug_id != null) {
+            var itemPrice = Math.round(
+              (manage_bill_details_result[i].order_quantity *
+                manage_bill_details_result[i].order_drug_quantity *
+                manage_bill_details_result[i].drug_price_per_unit *
+                100) /
+                100
+            ).toFixed(2);
+            rowTags =
+              "<tr>" +
+              "<td>" +
+              manage_bill_details_result[i].drug_id +
+              "</td>" +
+              "<td>" +
+              manage_bill_details_result[i].drug_name +
+              "</td>" +
+              "<td>" +
+              manage_bill_details_result[i].order_quantity *
+                manage_bill_details_result[i].order_drug_quantity +
+              "</td>" +
+              "<td>" +
+              manage_bill_details_result[i].drug_price_per_unit +
+              "</td>" +
+              "<td>" +
+              itemPrice +
+              "</td>" +
+              "</tr>";
+            tableTag.append(rowTags);
+            manageTotalPrice += Number(itemPrice);
+            totalItem +=
+              manage_bill_details_result[i].order_quantity *
+              manage_bill_details_result[i].order_drug_quantity;
+          }
+        }
+        $(".manage-total-item-quantity-field").attr("value", totalItem);
+        $(".manage-grand-total-quantity-field").attr(
+          "value",
+          Math.round((manageTotalPrice * 100) / 100).toFixed(2)
+        );
+        $(".payment-button").attr(
+          "value",
+          manage_bill_details_result[0].bill_id
+        );
+        $(".payment-button").attr("data-total", manageTotalPrice);
+        $(".payment-button").attr("data-row", row);
+      }
+
+      function processResult(bill_result) {
+        let tableTag = $(".bill-table");
+        let rowTags = "";
+        for (var i = 0; i < bill_result.length; i++) {
+          rowTags =
+            "<tr id='row" +
+            i +
+            "'>" +
+            "<td>" +
+            bill_result[i].bill_id +
+            "</td>" +
+            "<td>" +
+            bill_result[i].name +
+            "</td>" +
+            "<td>" +
+            bill_result[i].identification_number +
+            "</td>" +
+            "<td>" +
+            bill_result[i].address +
+            "</td>" +
+            "<td>" +
+            bill_result[i].phone_number +
+            "</td>" +
+            "<td><button class='action-button' value='" +
+            i +
+            "' data-id='" +
+            bill_result[i].bill_id +
+            "' title='Generate bill'><i class='far fa-file'></i></button></td>" +
+            "</tr>";
+          tableTag.append(rowTags);
+        }
+      }
+
+      function processCreatedResult(created_bill_result) {
+        let tableTag = $(".manage-bills-table");
+        let rowTags = "";
+        for (var i = 0; i < created_bill_result.length; i++) {
+          rowTags =
+            "<tr id='manage-row-" +
+            i +
+            "'>" +
+            "<td>" +
+            created_bill_result[i].bill_id +
+            "</td>" +
+            "<td>" +
+            created_bill_result[i].name +
+            "</td>" +
+            "<td>" +
+            created_bill_result[i].identification_number +
+            "</td>" +
+            "<td>" +
+            created_bill_result[i].address +
+            "</td>" +
+            "<td>" +
+            created_bill_result[i].phone_number +
+            "</td>" +
+            "<td><button class='manage-bills-action-button' value='" +
+            i +
+            "' data-id='" +
+            created_bill_result[i].bill_id +
+            "' title='Proceed Payment'><i class='far fa-file'></i></button></td>" +
+            "</tr>";
+          tableTag.append(rowTags);
+        }
+      }
+
+      function printBill() {
+        var printdata = document.getElementById("bill-form");
+        newwin = window.open("");
+        newwin.document.write(printdata.outerHTML);
+        newwin.print();
+        newwin.close();
+      }
+    </script>
+  </head>
+
+  <body>
+    <div style="display: flex; height: 100%">
+      <div class="side-navigation">
+        <div class="system-title">HIS-CARE</div>
+        <div class="navigation-text">Navigation</div>
+        <div class="billing-text">Billing</div>
+        <div class="manage-bills-text">Manage Bills</div>
+        <div class="payment-history-text">Payment History</div>
+      </div>
+
+      <div style="display: flex; flex-flow: column; width: 100%">
+        <div class="header">
+          <div class="back-icon">
+            <a href="../navigation.php"><i class="fas fa-chevron-left"></i></a>
+          </div>
+          <div class="header-title">BILLING SYSTEM</div>
+        </div>
+
+        <div class="content-container">
+          <div class="bill-content">
+            <div class="content-title">
+              Billing<small> > List of customer's bill</small>
+            </div>
+
+            <div class="search-area">
+              <div class="search-text">Show Bill For:</div>
+              <div class="search-field">
+                <select class="day-dropdown">
+                  <option>Today</option>
+                  <option>Yesterday</option>
+                  <option>Last 7 Days</option>
+                  <option>Last 30 Days</option>
+                </select>
+              </div>
+              <div class="search-icon">
+                <button class="search-button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="bill-table-container">
+              <table class="bill-table" id="bill-table">
+                <tr>
+                  <th>Bill No.</th>
+                  <th>Name</th>
+                  <th>IC No</th>
+                  <th>Address</th>
+                  <th>Phone No.</th>
+                  <th>Action</th>
+                </tr>
+                <tr class="row-instruction">
+                  <td colspan="6" align="center">
+                    Please select filter and press search button
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="bill-details-content">
+            <div class="content-title">
+              Billing<small>
+                > List of customer's bill > Customer's bill details</small
+              >
+            </div>
+
+            <div class="bill-details-container">
+              <div class="bill-detail-text">Bill Detail</div>
+              <div class="bill-details-grid">
+                <div>
+                  <label for="bill-no-field">Bill No.</label>
+                  <input
+                    type="text"
+                    name="bill-no-field"
+                    id="bill-no-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="date-field">Issue Date</label>
+                  <input
+                    type="text"
+                    name="date-field"
+                    id="date-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="ic-no-field">IC No.</label>
+                  <input
+                    type="text"
+                    name="ic-no-field"
+                    id="ic-no-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="name-field">Name</label>
+                  <input
+                    type="text"
+                    name="name-field"
+                    id="name-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="gender-field">Gender</label>
+                  <input
+                    type="text"
+                    name="gender-field"
+                    id="gender-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="address-field">Address</label>
+                  <input
+                    type="text"
+                    name="address-field"
+                    id="address-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="phone-no-field">Phone No.</label>
+                  <input
+                    type="text"
+                    name="phone-no-field"
+                    id="phone-no-field"
+                    disabled
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="item-table-container">
+              <div class="item-detail-text">Item Detail</div>
+              <table class="item-table">
+                <tr>
+                  <th>Item Code</th>
+                  <th>Item Description</th>
+                  <th>Item Quantity</th>
+                  <th>Unit Price (RM)</th>
+                  <th>Total Amount (RM)</th>
+                </tr>
+              </table>
+            </div>
+
+            <div class="total-item-container">
+              <div class="total-item-text">Total Item Quantity:</div>
+              <div class="total-item-quantity">
+                <input class="total-item-quantity-field" type="text" disabled />
+              </div>
+            </div>
+
+            <div class="total-price-container">
+              <div class="grand-total-text">Grand Total (RM):</div>
+              <div class="grand-total-quantity">
+                <input
+                  class="grand-total-quantity-field"
+                  type="text"
+                  disabled
+                />
+              </div>
+            </div>
+
+            <div class="confirm-button-container">
+              <button class="back-button"><u>Back</u></button>
+              <button class="confirm-button">Confirm Bill</button>
+            </div>
+          </div>
+
+          <div class="manage-bills-content">
+            <div class="content-title">
+              Manage Bill<small> > List of customer's bill</small>
+            </div>
+
+            <div class="search-area">
+              <div class="search-text">Show Bill For:</div>
+              <div class="search-field">
+                <select class="manage-bills-dropdown">
+                  <option>IC Number</option>
+                  <option>Today</option>
+                  <option>Yesterday</option>
+                  <option>Last 7 Days</option>
+                  <option>Last 30 Days</option>
+                </select>
+              </div>
+              <div class="search-icon">
+                <button class="manage-bills-search-button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+
+            <div
+              style="display: flex; justify-content: center; margin-top: 20px"
+            >
+              <label>IC Number:</label>
+              <input type="text" class="ic-number-field" />
+            </div>
+
+            <div class="manage-bills-table-container">
+              <table class="manage-bills-table">
+                <tr>
+                  <th>Bill No.</th>
+                  <th>Name</th>
+                  <th>IC No</th>
+                  <th>Address</th>
+                  <th>Phone No.</th>
+                  <th>Action</th>
+                </tr>
+                <tr class="manage-bills-row-instruction">
+                  <td colspan="6" align="center">
+                    Please select filter and press search button
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="manage-bill-details-content">
+            <div class="content-title">
+              Manage Bill<small>
+                > List of customer's bill > Bill details for specific
+                customer</small
+              >
+            </div>
+
+            <div class="bill-details-container">
+              <div class="bill-detail-text">Bill Detail</div>
+              <div class="bill-details-grid">
+                <div>
+                  <label for="manage-bill-no-field">Bill No.</label>
+                  <input
+                    type="text"
+                    name="manage-bill-no-field"
+                    id="manage-bill-no-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="manage-date-field">Transaction Date</label>
+                  <input
+                    type="text"
+                    name="manage-date-field"
+                    id="manage-date-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="manage-ic-no-field">IC No.</label>
+                  <input
+                    type="text"
+                    name="manage-ic-no-field"
+                    id="manage-ic-no-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="manage-name-field">Name</label>
+                  <input
+                    type="text"
+                    name="manage-name-field"
+                    id="manage-name-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="manage-gender-field">Gender</label>
+                  <input
+                    type="text"
+                    name="manage-gender-field"
+                    id="manage-gender-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="manage-address-field">Address</label>
+                  <input
+                    type="text"
+                    name="manage-address-field"
+                    id="manage-address-field"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label for="manage-phone-no-field">Phone No.</label>
+                  <input
+                    type="text"
+                    name="manage-phone-no-field"
+                    id="manage-phone-no-field"
+                    disabled
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="item-table-container">
+              <div class="item-detail-text">Item Detail</div>
+              <table class="manage-item-table">
+                <tr>
+                  <th>Item Code</th>
+                  <th>Item Description</th>
+                  <th>Item Quantity</th>
+                  <th>Unit Price (RM)</th>
+                  <th>Total Amount (RM)</th>
+                </tr>
+              </table>
+            </div>
+
+            <div class="total-item-container">
+              <div class="total-item-text">Total Item Quantity:</div>
+              <div class="total-item-quantity">
+                <input
+                  class="manage-total-item-quantity-field"
+                  type="text"
+                  disabled
+                />
+              </div>
+            </div>
+
+            <div class="total-price-container">
+              <div class="grand-total-text">Grand Total (RM):</div>
+              <div class="grand-total-quantity">
+                <input
+                  class="manage-grand-total-quantity-field"
+                  type="text"
+                  disabled
+                />
+              </div>
+            </div>
+
+            <div class="confirm-button-container">
+              <button class="manage-back-button"><u>Back</u></button>
+              <button class="payment-button">Payment</button>
+            </div>
+          </div>
+
+          <div class="payment-history-content">
+            <div class="content-title">
+              Payment History<small> > List of payment history</small>
+            </div>
+
+            <div class="search-area">
+              <div class="search-text">Show Payment For:</div>
+              <div class="search-field">
+                <select class="payment-history-dropdown">
+                  <option>IC Number</option>
+                  <option>Today</option>
+                  <option>Yesterday</option>
+                  <option>Last 7 Days</option>
+                  <option>Last 30 Days</option>
+                </select>
+              </div>
+              <div class="search-icon">
+                <button class="payment-history-search-button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+
+            <div
+              style="display: flex; justify-content: center; margin-top: 20px"
+            >
+              <label>IC Number:</label>
+              <input type="text" class="payment-history-ic-number-field" />
+            </div>
+
+            <div class="payment-history-table-container">
+              <table class="payment-history-table">
+                <tr>
+                  <th>Payment No.</th>
+                  <th>Name</th>
+                  <th>IC No</th>
+                  <th>Transaction Date</th>
+                  <th>Phone No.</th>
+                  <th>Action</th>
+                </tr>
+                <tr class="payment-history-row-instruction">
+                  <td colspan="6" align="center">
+                    Please select filter and press search button
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-modal">
+      <div class="modal-content">
+        <div class="modal-close">+</div>
+        <div id="modal-container">
+          <div class="payment-calculator-text">Payment Calculator</div>
+
+          <div class="field-container">
+            <div
+              class="subtotal-container"
+              style="display: flex; margin-bottom: 20px"
+            >
+              <label style="min-width: 150px">Subtotal (RM):</label>
+              <input
+                class="subtotal-field"
+                type="text"
+                disabled
+                style="width: 100%; height: 22px"
+              />
+            </div>
+            <div
+              class="service-charge-container"
+              style="display: flex; margin-bottom: 20px"
+            >
+              <label style="min-width: 150px">Service Charge (RM):</label>
+              <input
+                class="service-charge-field"
+                type="text"
+                disabled
+                style="width: 100%; height: 22px"
+              />
+            </div>
+            <div
+              class="grand-total-container"
+              style="display: flex; margin-bottom: 20px"
+            >
+              <label style="min-width: 150px">Grand Total (RM):</label>
+              <input
+                class="grand-total-field"
+                type="text"
+                disabled
+                style="width: 100%; height: 22px"
+              />
+            </div>
+            <div
+              class="payment-method-container"
+              style="display: flex; margin-bottom: 20px"
+            >
+              <label style="min-width: 150px">Payment Method:</label>
+              <select
+                class="payment-method-dropdown"
+                style="
+                  width: 100%;
+                  background-color: #ededed;
+                  border-radius: 5px;
+                  height: 22px;
+                "
+              >
+                <option>Cash</option>
+                <option>Debit Card</option>
+                <option>Credit Card</option>
+              </select>
+            </div>
+            <div
+              class="amount-receive-container"
+              style="display: flex; margin-bottom: 20px"
+            >
+              <label style="min-width: 150px">Amount Received (RM):</label>
+              <input
+                class="amount-receive-field"
+                type="text"
+                style="width: 100%; height: fit-content; height: 22px"
+              />
+            </div>
+            <div
+              class="change-container"
+              style="display: flex; margin-bottom: 20px"
+            >
+              <label style="min-width: 150px">Change (RM):</label>
+              <input
+                class="change-field"
+                type="text"
+                style="width: 100%; height: 22px"
+                disabled
+              />
+            </div>
+          </div>
+          <div class="make-payment-button-container">
+            <button
+              class="make-payment-button"
+              style="float: right; padding: 0"
+            >
+              Make Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-container" style="padding: 15px">
+      <form id="bill-form" style="width: 100%; height: 100%">
+        <div class="hospital-name-container" style="margin-bottom: 10px">
+          <h1>Newbie Hospital</h1>
+        </div>
+        <div class="address-container" style="margin-bottom: 10px">
+          Lot 5921,<br />
+          Persiaran Raja Muda Musa,<br />
+          Taman Radzi,<br />
+          41200 Klang,<br />
+          Selangor
+        </div>
+        <div class="contact-container" style="margin-bottom: 10px">
+          Contact Info: 03-3258 5500
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
